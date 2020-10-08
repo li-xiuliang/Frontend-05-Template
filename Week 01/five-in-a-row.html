@@ -1,0 +1,299 @@
+<style>
+    .cell {
+        width: 50px;
+        height: 50px;
+        background-color: green;
+        display: inline-block;
+        border: solid 1px white;
+        vertical-align: middle;
+        line-height: 50px;
+        font-size: 25px;
+        text-align: center;
+    }
+    
+    .button {
+        display: inline-block;
+        padding: 15px 25px;
+        font-size: 24px;
+        cursor: pointer;
+        text-align: center;
+        text-decoration: none;
+        outline: none;
+        color: #fff;
+        background-color: #4CAF50;
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 9px #999;
+    }
+    
+    .button:hover {
+        background-color: #3e8e41
+    }
+    
+    .button:active {
+        background-color: #3e8e41;
+        box-shadow: 0 5px #666;
+        transform: translateY(4px);
+    }
+</style>
+
+<div id="board"></div>
+
+<p>
+    <button id="start" class="button" onclick=start()>Restart</button>
+</p>
+
+<script>
+    let pattern = Array(225).fill(0)
+    let color = 1;
+
+    function show() {
+        let board = document.getElementById("board");
+
+        board.innerHTML = "";
+
+        for (let i = 0; i < 15; i++) {
+            for (let j = 0; j < 15; j++) {
+                let cell = document.createElement("div");
+                cell.classList.add("cell");
+                cell.innerText =
+                    pattern[i * 15 + j] == 2 ? "❌" :
+                    pattern[i * 15 + j] == 1 ? "⭕" : "";
+                cell.addEventListener("click", () => userMove(i, j));
+                board.appendChild(cell);
+            }
+            board.appendChild(document.createElement("br"))
+        }
+    }
+
+    function remove() {
+        let board = document.getElementById("board");
+        board.innerHTML = "";
+        for (let i = 0; i < 15; i++) {
+            for (let j = 0; j < 15; j++) {
+                let cell = document.createElement("div");
+                cell.classList.add("cell");
+                cell.innerText =
+                    pattern[i * 15 + j] == 2 ? "❌" :
+                    pattern[i * 15 + j] == 1 ? "⭕" : "";
+                // cell.addEventListener("click", () => userMove(i, j));
+                board.appendChild(cell);
+            }
+            board.appendChild(document.createElement("br"))
+        }
+    }
+    // function move(x, y) {
+    //     pattern[x * 3 + y] = color;
+    //     if (check(pattern, color)) {
+    //         alert(color == 2 ? "❌ is winner!" : "⭕ is winner!");
+    //     }
+    //     color = 3 - color;
+    //     console.log(bestChoice(pattern, color));
+    //     show();
+    //     if (willWin(pattern, color)) {
+    //         console.log(color == 2 ? "❌ will win!" : "⭕ will win!")
+    //     }
+    // }
+
+    function userMove(x, y) {
+        if (pattern[x * 15 + y]) {
+            alert("This location is already occupied, please choose others");
+            return;
+        }
+        pattern[x * 15 + y] = color;
+        show();
+        result = check(pattern, x, y, color);
+        if (result === 2) {
+            alert("Finish, Draw the situation!");
+            remove();
+            return;
+        }
+        if (result === 1) {
+            alert(color == 2 ? "❌ is winner!" : "⭕ is winner!");
+            remove();
+            return;
+        }
+        color = 3 - color;
+        computerMove()
+    }
+
+    function computerMove() {
+        let choice = bestChoice(pattern, color);
+        if (choice.point)
+            pattern[choice.point[0] * 15 + choice.point[1]] = color;
+        show();
+        result = check(pattern, choice.point[0], choice.point[1], color);
+        if (result === 2) {
+            alert("Finish, Draw the situation!");
+            remove();
+            return;
+        }
+        if (result === 1) {
+            alert(color == 2 ? "❌ is winner!" : "⭕ is winner!");
+            remove();
+            return;
+        }
+        color = 3 - color;
+    }
+
+    function check(pattern, x, y, color) {
+
+        let row = 0;
+        for (let j = y + 1; j < 15; j++) {
+            if (pattern[x * 15 + j] === color) {
+                row += 1;
+            } else {
+                break;
+            }
+        }
+        for (let j = y - 1; j >= 0; j--) {
+            if (pattern[x * 15 + j] === color) {
+                row += 1;
+            } else {
+                break;
+            }
+        }
+        if (row >= 4) {
+            return 1
+        }
+
+        let column = 0;
+        for (let i = x + 1; i < 15; i++) {
+            if (pattern[i * 15 + y] === color) {
+                column += 1;
+            } else {
+                break;
+            }
+        }
+        for (let i = x - 1; i >= 0; i--) {
+            if (pattern[i * 15 + y] === color) {
+                column += 1;
+            } else {
+                break;
+            }
+        }
+        if (column >= 4) {
+            return 1
+        }
+
+        let diagonal = 0;
+        d_outer: for (let i = x + 1; i < 15; i++) {
+            for (let j = y + 1; j < 15; j++) {
+                if (pattern[i * 15 + j] === color) {
+                    diagonal += 1;
+                } else {
+                    break d_outer;
+                }
+            }
+        }
+        dm_outer: for (let i = x - 1; i >= 0; i--) {
+            for (let j = y - 1; j >= 0; j--)
+                if (pattern[i * 15 + j] === color) {
+                    diagonal += 1;
+                } else {
+                    break dm_outer;
+                }
+        }
+        if (diagonal >= 4) {
+            return 1
+        }
+
+        let b_diagonal = 0;
+        bd_outer: for (let i = x - 1; i >= 0; i--) {
+            for (let j = y + 1; j < 15; j++) {
+                if (pattern[i * 15 + j] === color) {
+                    b_diagonal += 1;
+                } else {
+                    break bd_outer;
+                }
+            }
+        }
+        bdm_outer: for (let i = x + 1; i < 15; i++) {
+            for (let j = y - 1; j >= 0; j--)
+                if (pattern[i * 15 + j] === color) {
+                    b_diagonal += 1;
+                } else {
+                    break bdm_outer;
+                }
+        }
+        if (b_diagonal >= 4) {
+            return 1
+        }
+        return 0
+    }
+
+    function clone(pattern) {
+        return Object.create(pattern);
+    }
+
+    function willWin(pattern, color) {
+        for (let i = 0; i < 15; i++) {
+            for (let j = 0; j < 15; j++) {
+                if (pattern[i * 15 + j])
+                    continue;
+                let tmp = clone(pattern);
+                tmp[i * 15 + j] = color;
+                if (check(tmp, i, j, color) === 1) {
+                    return [i, j];
+                }
+            }
+        }
+        return null;
+    }
+
+    function bestChoice(pattern, color) {
+        let moves = possibleMoves(pattern);
+        if (!moves.length) {
+            let point = [7, 7];
+            let result = 0;
+            return {
+                point,
+                result
+            };
+        }
+        let point = moves[Math.round(Math.random() * (moves.length - 1))];
+        let result = Math.random();
+        return {
+            point,
+            result
+        };
+    }
+
+    function hasNeighbor(pattern, x, y, radius) {
+        let startx = x - radius;
+        let starty = y - radius;
+        let endx = x + radius;
+        let endy = y + radius;
+
+        for (let i = startx; i <= endx; i++) {
+            for (let j = starty; j <= endy; j++) {
+                if (i >= 0 && i < 15 && j >= 0 && j < 15) {
+                    if (pattern[i * 15 + j] != 0) return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    function possibleMoves(pattern) {
+        let moves = [];
+        let radius = 1;
+        for (let x = 0; x < 15; x++) {
+            for (let y = 0; y < 15; y++) {
+                if (pattern[x * 15 + y] === 0 && hasNeighbor(pattern, x, y, radius)) {
+                    moves.push([x, y]);
+                }
+            }
+        }
+        return moves;
+    }
+
+    function start() {
+        pattern = Array(225).fill(0)
+        color = 1;
+        show();
+        console.log(bestChoice(pattern, color));
+    }
+
+    start();
+</script>
