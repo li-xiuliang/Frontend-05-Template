@@ -1,0 +1,91 @@
+<div id="container">
+我是文字 我是文字 我是文字 我是文字 我是文字 
+我是文字 我是文字 我是文字 我是文字 我是文字 
+我是文字 我是文字 我是文字 我是文字 我是文字 
+我是文字 我是文字 我是文字 我是文字 我是文字 
+我是文字 我是文字 我是文字 我是文字 我是文字 
+我是文字 我是文字 我是文字 我是文字 我是文字 
+我是文字 我是文字 我是文字 我是文字 我是文字 
+我是文字 我是文字 我是文字 我是文字 我是文字 
+我是文字 我是文字 我是文字 我是文字 我是文字 
+我是文字 我是文字 我是文字 我是文字 我是文字 
+我是文字 我是文字 我是文字 我是文字 我是文字 
+我是文字 我是文字 我是文字 我是文字 我是文字 
+我是文字 我是文字 我是文字 我是文字 我是文字 
+我是文字 我是文字 我是文字 我是文字 我是文字 
+我是文字 我是文字 我是文字 我是文字 我是文字 
+我是文字 我是文字 我是文字 我是文字 我是文字 
+我是文字 我是文字 我是文字 我是文字 我是文字 
+我是文字 我是文字 我是文字 我是文字 我是文字 
+我是文字 我是文字 我是文字 我是文字 我是文字 
+我是文字 我是文字 我是文字 我是文字 我是文字 
+我是文字 我是文字 我是文字 我是文字 我是文字 
+我是文字 我是文字 我是文字 我是文字 我是文字 
+我是文字 我是文字 我是文字 我是文字 我是文字 
+我是文字 我是文字 我是文字 我是文字 我是文字 
+我是文字 我是文字 我是文字 我是文字 我是文字 
+我是文字 我是文字 我是文字 我是文字 我是文字 
+我是文字 我是文字 我是文字 我是文字 我是文字 
+我是文字 我是文字 我是文字 我是文字 我是文字 
+我是文字 我是文字 我是文字 我是文字 我是文字 
+我是文字 我是文字 我是文字 我是文字 我是文字 
+我是文字 我是文字 我是文字 我是文字 我是文字 
+我是文字 我是文字 我是文字 我是文字 我是文字 
+我是文字 我是文字 我是文字 我是文字 我是文字 
+我是文字 我是文字 我是文字 我是文字 我是文字 
+我是文字 我是文字 我是文字 我是文字 我是文字 
+我是文字 我是文字 我是文字 我是文字 我是文字 
+</div>
+
+<div id="dragable" style="display:inline-block;width:100px;height:100px;background-color:pink;"></div>
+
+<script>
+    let baseX = 0, baseY = 0;
+    document.getElementById("dragable").addEventListener("mousedown", function(event){
+        let startX = event.clientX,  startY = event.clientY;
+        let move = event => {
+            console.log(event.clientX, event.clientY);
+            let x = baseX + event.clientX - startX, y = baseY + event.clientY - startY;
+            let range = nearest(event.clientX, event.clientY)
+            range.insertNode(document.getElementById("dragable"));
+        }
+        let end = event => {
+            baseX = event.clientX - startY, baseY = event.clientY - startY;
+            document.removeEventListener("mousemove", move);
+            document.removeEventListener("mouseup", end);
+        }
+        document.addEventListener("mousemove", move);
+        document.addEventListener("mouseup", end)
+
+    })
+
+    let container = document.getElementById("container");
+
+    let ranges = [];
+    for(let i = 0; i < container.childNodes[0].textContent.length; i ++){
+        let range = document.createRange();
+        range.setStart(container.childNodes[0], i);
+        range.setEnd(container.childNodes[0], i)
+        ranges.push(range);
+        console.log();
+    }
+
+    function nearest(x0, y0){
+        let nearest = null;
+        let distance = Infinity;
+        for(let range of ranges){
+            let rect = range.getClientRects()[0];
+            if(!rect)
+                continue;
+            let {x, y} = rect;
+            let d = (x - x0) ** 2 + (y - y0) ** 2;
+            if (d < distance){
+                distance = d;
+                nearest = range;
+            }
+        }
+        return(nearest);
+
+    }
+    document.addEventListener("selectstart", event => event.preventDefault());
+</script>
